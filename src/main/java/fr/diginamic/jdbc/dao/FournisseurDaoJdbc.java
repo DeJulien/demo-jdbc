@@ -131,7 +131,9 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 			System.out.println(connection);
 			
 			Statement monStatement = connection.createStatement();
-			stn=monStatement.executeUpdate("UPDATE FOURNISSEUR SET NOM='La Maison des Peintures'  WHERE ID='4'");
+			
+			
+			stn=monStatement.executeUpdate("UPDATE FOURNISSEUR SET NOM='"+nouveauNom+"'  WHERE NOM='"+ancienNom+"'");
 			connection.commit();
 			
 			monStatement.close();
@@ -151,7 +153,7 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 	@Override
 	public boolean delete(Fournisseur fournisseur) {
 		boolean test= false;
-		
+		int id=fournisseur.getId();
 		ResourceBundle monFichierConf = ResourceBundle.getBundle("database");
 		String driverName = monFichierConf.getString("database.driver");
 		String url=monFichierConf.getString("database.url");
@@ -173,7 +175,7 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 			System.out.println(connection);
 			
 			Statement monStatement = connection.createStatement();
-			monStatement.executeUpdate("DELETE FROM FOURNISSEUR WHERE ID='4'");
+			monStatement.executeUpdate("DELETE FROM FOURNISSEUR WHERE ID='"+id+"'");
 			test=true;
 			monStatement.close();
 			connection.close();
