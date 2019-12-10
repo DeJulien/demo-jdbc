@@ -16,7 +16,7 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 	
 
 	@Override
-	public List<Fournisseur> extraire() {
+	public List<Fournisseur> extraire() throws RuntimeException{
 		ResourceBundle monFichierConf = ResourceBundle.getBundle("database");
 		String driverName = monFichierConf.getString("database.driver");
 		String url=monFichierConf.getString("database.url");
@@ -30,15 +30,16 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
-		
+		Connection connection=null;
+		Statement monStatement=null;
+		ResultSet curseur=null;
 		
 		try {
-			Connection connection = DriverManager.getConnection(url, user, password);
-			System.out.println(connection);
+			connection = DriverManager.getConnection(url, user, password);
 			
-			Statement monStatement = connection.createStatement();
-			ResultSet curseur = monStatement.executeQuery("SELECT ID, NOM FROM FOURNISSEUR");
+			monStatement = connection.createStatement();
+			
+			curseur = monStatement.executeQuery("SELECT ID, NOM FROM FOURNISSEUR");
 			
 			while (curseur.next()){
 				
@@ -52,9 +53,19 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 			curseur.close();
 			monStatement.close();
 			connection.close();
-		} catch (SQLException e) {
+		} catch (SQLException e ) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}finally {
+			try {
+				curseur.close();
+				monStatement.close();
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
 		
 		for (int i=0;i<listFournisseur.size();i++)
@@ -66,7 +77,7 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 	}
 
 	@Override
-	public void insert(Fournisseur fournisseur) {
+	public void insert(Fournisseur fournisseur) throws RuntimeException {
 
 		int id=fournisseur.getId();
 		String nom=fournisseur.getNom();
@@ -88,28 +99,38 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 			e1.printStackTrace();
 		}
 		String tempo="INSERT INTO FOURNISSEUR (ID,NOM) VALUES ('"+id+"','"+nom+"')";
+		Connection connection=null;
+		Statement monStatement=null;
 		
 		
 		try {
-			Connection connection = DriverManager.getConnection(url, user, password);
+			connection = DriverManager.getConnection(url, user, password);
 			System.out.println(connection);
 			
-			Statement monStatement = connection.createStatement();
+			monStatement = connection.createStatement();
 			monStatement.executeUpdate(tempo);
 			connection.commit();
 			
-			monStatement.close();
-			connection.close();
+			
 			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}finally {
+			try {
+				monStatement.close();
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
 		
 	}
 
 	@Override
-	public int update(String ancienNom, String nouveauNom) {
+	public int update(String ancienNom, String nouveauNom) throws RuntimeException {
 		ResourceBundle monFichierConf = ResourceBundle.getBundle("database");
 		String driverName = monFichierConf.getString("database.driver");
 		String url=monFichierConf.getString("database.url");
@@ -124,34 +145,39 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 			e1.printStackTrace();
 		}
 		
-		
+		Connection connection=null;
+		Statement monStatement=null;
 		
 		try {
-			Connection connection = DriverManager.getConnection(url, user, password);
+			connection = DriverManager.getConnection(url, user, password);
 			System.out.println(connection);
 			
-			Statement monStatement = connection.createStatement();
+			monStatement = connection.createStatement();
 			
 			
 			stn=monStatement.executeUpdate("UPDATE FOURNISSEUR SET NOM='"+nouveauNom+"'  WHERE NOM='"+ancienNom+"'");
 			connection.commit();
 			
-			monStatement.close();
-			connection.close();
-			
-			
-			
-			connection.close();
+
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}finally {
+			try {
+				monStatement.close();
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
 
 		return stn;
 	}
 
 	@Override
-	public boolean delete(Fournisseur fournisseur) {
+	public boolean delete(Fournisseur fournisseur) throws RuntimeException{
 		boolean test= false;
 		int id=fournisseur.getId();
 		ResourceBundle monFichierConf = ResourceBundle.getBundle("database");
@@ -168,21 +194,30 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 			e1.printStackTrace();
 		}
 		
-		
+		Connection connection=null;
+		Statement monStatement=null;
 		
 		try {
-			Connection connection = DriverManager.getConnection(url, user, password);
+			connection = DriverManager.getConnection(url, user, password);
 			System.out.println(connection);
 			
-			Statement monStatement = connection.createStatement();
+			monStatement = connection.createStatement();
 			monStatement.executeUpdate("DELETE FROM FOURNISSEUR WHERE ID='"+id+"'");
 			test=true;
-			monStatement.close();
-			connection.close();
+			
 
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}finally {
+			try {
+				monStatement.close();
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
 		return test;
 	}
