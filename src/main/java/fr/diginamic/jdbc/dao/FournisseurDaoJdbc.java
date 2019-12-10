@@ -36,23 +36,18 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 		
 		try {
 			connection = DriverManager.getConnection(url, user, password);
-			
 			monStatement = connection.createStatement();
-			
 			curseur = monStatement.executeQuery("SELECT ID, NOM FROM FOURNISSEUR");
 			
 			while (curseur.next()){
 				
-			Integer id = curseur.getInt("ID");
-			String nom = curseur.getString("NOM");
-			Fournisseur fournisseur = new Fournisseur(id, nom);
-			listFournisseur.add(fournisseur);
+				Integer id = curseur.getInt("ID");
+				String nom = curseur.getString("NOM");
+				Fournisseur fournisseur = new Fournisseur(id, nom);
+				listFournisseur.add(fournisseur);
 			
 			}
 			
-			curseur.close();
-			monStatement.close();
-			connection.close();
 		} catch (SQLException e ) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -66,12 +61,6 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 				e.printStackTrace();
 			}
 			
-		}
-		
-		for (int i=0;i<listFournisseur.size();i++)
-		{
-			Fournisseur temp= listFournisseur.get(i);
-			System.out.println(temp.getId()+" : "+temp.getNom());
 		}
 		return listFournisseur;
 	}
@@ -89,9 +78,6 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 		String password="";
 		
 		
-		
-		
-		System.out.println(id+" "+nom);
 		try {
 			Class.forName(driverName);
 		} catch (ClassNotFoundException e1) {
@@ -105,14 +91,11 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 		
 		try {
 			connection = DriverManager.getConnection(url, user, password);
-			System.out.println(connection);
 			
 			monStatement = connection.createStatement();
 			monStatement.executeUpdate(tempo);
 			connection.commit();
-			
-			
-			
+
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -150,8 +133,6 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 		
 		try {
 			connection = DriverManager.getConnection(url, user, password);
-			System.out.println(connection);
-			
 			monStatement = connection.createStatement();
 			
 			
