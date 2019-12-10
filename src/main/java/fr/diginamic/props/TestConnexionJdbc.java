@@ -1,7 +1,6 @@
 package fr.diginamic.props;
 
 
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -17,6 +16,8 @@ public class TestConnexionJdbc {
 		String url=monFichierConf.getString("database.url");
 		String user=monFichierConf.getString("database.user");
 		String password="";
+		
+		
 		try {
 			Class.forName(driverName);
 		} catch (ClassNotFoundException e1) {
@@ -24,14 +25,17 @@ public class TestConnexionJdbc {
 			e1.printStackTrace();
 		}
 		
+		
+		
 		try {
 			Connection connection = DriverManager.getConnection(url, user, password);
-			System.out.println("connection open");
+			System.out.println(connection);
 			
 
 			
+			
+			
 			connection.close();
-			System.out.println("connection close");
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
