@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ResourceBundle;
 
-public class TestInsertion {
+public class TestUpdate {
 
 	public static void main(String[] args) {
 		
@@ -31,19 +31,20 @@ public class TestInsertion {
 			System.out.println(connection);
 			
 			Statement monStatement = connection.createStatement();
-			monStatement.executeUpdate("INSERT INTO FOURNISSEUR (ID,NOM) VALUES (4,'La Maison de la Peinture')");
+			monStatement.executeUpdate("UPDATE FOURNISSEUR SET NOM='La Maison des Peintures'  WHERE ID='4'");
 			connection.commit();
 			
 			monStatement.close();
 			connection.close();
 			
+			
+			
+			connection.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		
-		
+
 	}
 
 }
