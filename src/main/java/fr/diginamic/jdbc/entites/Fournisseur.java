@@ -14,7 +14,7 @@ public class Fournisseur {
 	private int id;
 	private String nom;
 	
-	public Fournisseur(Integer id, String nom) {
+	public Fournisseur(int id, String nom) {
 		this.id=id;
 		this.nom=nom;
 	}
