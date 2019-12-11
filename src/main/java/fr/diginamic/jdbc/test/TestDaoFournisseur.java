@@ -12,7 +12,11 @@ public class TestDaoFournisseur {
 		List<Fournisseur> listFournisseur;
 		FournisseurDaoJdbc temps = new FournisseurDaoJdbc();
 		listFournisseur=temps.extraire();
-		
+		for (int i=0;i<listFournisseur.size();i++)
+		{
+			Fournisseur temp= listFournisseur.get(i);
+			System.out.println(temp.getId()+" : "+temp.getNom());
+		}
 		//Insert
 		/*Fournisseur test= new Fournisseur(4,"La Maison de la Peinture");
 		temps.insert(test);
