@@ -17,6 +17,7 @@ public class TestDaoFournisseur {
 			Fournisseur temp= listFournisseur.get(i);
 			System.out.println(temp.getId()+" : "+temp.getNom());
 		}
+		temps.deconnectionT();
 		//Insert
 		/*Fournisseur test= new Fournisseur(4,"La Maison de la Peinture");
 		temps.insert(test);
@@ -46,6 +47,8 @@ public class TestDaoFournisseur {
 			Fournisseur temp= listFournisseur.get(i);
 			System.out.println(temp.getId()+" : "+temp.getNom());
 		}*/
+		
+		temps.deconnectionT();
 	}
 
 }

@@ -18,6 +18,10 @@ import fr.diginamic.jdbc.entites.Fournisseur;
 
 public class FournisseurDaoJdbc implements FournisseurDao {
 	
+	private Connection connection=null;
+	private PreparedStatement monStatement=null;
+	
+	
 	private static ResourceBundle bundle = ResourceBundle.getBundle("database");
 	// On créé le singleton 
 	private static FournisseurDaoJdbc instance = new FournisseurDaoJdbc();
@@ -49,6 +53,21 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 		}
 	}
 	
+	public void deconnectionT()
+	{
+		try {
+			monStatement.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	
 	
 
@@ -56,22 +75,17 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 	public List<Fournisseur> extraire() throws RuntimeException{
 		ArrayList<Fournisseur> listFournisseur = new ArrayList<>();
 		
-		Connection connection=null;
-		Statement monStatement=null;
-		ResultSet curseur=null;
 		
+		ResultSet curseur=null;
+		String tempo="SELECT ID, NOM FROM FOURNISSEUR";
 		try {
 			connection = getConnection();
-			monStatement = connection.createStatement();
-			curseur = monStatement.executeQuery("SELECT ID, NOM FROM FOURNISSEUR");
+			monStatement = connection.prepareStatement(tempo);
+			curseur = monStatement.executeQuery();
 			
 			while (curseur.next()){
-				
-				Integer id = curseur.getInt("ID");
-				String nom = curseur.getString("NOM");
-				Fournisseur fournisseur = new Fournisseur(id, nom);
+				Fournisseur fournisseur = new Fournisseur(curseur.getInt("ID"), curseur.getString("NOM"));
 				listFournisseur.add(fournisseur);
-			
 			}
 			
 		} catch (SQLException e ) {
@@ -80,8 +94,6 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 		}finally {
 			try {
 				curseur.close();
-				monStatement.close();
-				connection.close();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -94,35 +106,20 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 	@Override
 	public void insert(Fournisseur fournisseur) throws RuntimeException {
 
-		int id=fournisseur.getId();
-		String nom=fournisseur.getNom();
-
 		String tempo="INSERT INTO FOURNISSEUR (ID,NOM) VALUES (?,?)";
-		Connection connection=null;
-		PreparedStatement monStatement=null;
-		
-		
+
 		try {
 			connection = getConnection();
 			
 			monStatement = connection.prepareStatement(tempo);
-			monStatement.setInt(1,id);
-			monStatement.setString(2, nom);
+			monStatement.setInt(1,fournisseur.getId());
+			monStatement.setString(2, fournisseur.getNom());
 			monStatement.executeUpdate();
 			connection.commit();
 
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}finally {
-			try {
-				monStatement.close();
-				connection.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
 		}
 		
 	}
@@ -131,8 +128,6 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 	public int update(String ancienNom, String nouveauNom) throws RuntimeException {
 		int stn=0;
 
-		Connection connection=null;
-		PreparedStatement monStatement=null;
 		String tempo="UPDATE FOURNISSEUR SET NOM=?  WHERE NOM=?";
 		
 		try {
@@ -147,27 +142,13 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}finally {
-			try {
-				monStatement.close();
-				connection.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-		}
-
+		}	
 		return stn;
 	}
 
 	@Override
 	public boolean delete(Fournisseur fournisseur) throws RuntimeException{
 		boolean test= false;
-		int id=fournisseur.getId();
-
-		Connection connection=null;
-		PreparedStatement monStatement=null;
 		String tempo="DELETE FROM FOURNISSEUR WHERE ID=?";
 		
 		try {
@@ -175,7 +156,7 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 			System.out.println(connection);
 			
 			monStatement = connection.prepareStatement(tempo);
-			monStatement.setInt(1,id);
+			monStatement.setInt(1,fournisseur.getId());
 			monStatement.executeUpdate();
 			test=true;
 			
@@ -183,15 +164,6 @@ public class FournisseurDaoJdbc implements FournisseurDao {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}finally {
-			try {
-				monStatement.close();
-				connection.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
 		}
 		return test;
 	}
