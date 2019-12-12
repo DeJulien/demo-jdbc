@@ -32,8 +32,8 @@ public class TestDaoArticle {
 
 		
 		//ajout des articles
-		
 		/*
+		
 		tempsFourni.insert(fourni);
 		
 		Article a1= new Article(11,"G01","Peinture blanche 1L",12.5,4);
@@ -51,8 +51,8 @@ public class TestDaoArticle {
 		{
 			Article temp= listArticle.get(i);
 			System.out.println(temp.getId()+" / "+temp.getRef()+" / "+temp.getDesignation()+" / "+temp.getPrix()+" / "+temp.getFournisseurId());
-		}
-		*/
+		}*/
+		
 		
 		//modification du prix
 		

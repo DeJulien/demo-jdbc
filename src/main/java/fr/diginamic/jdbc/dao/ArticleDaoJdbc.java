@@ -1,7 +1,9 @@
 package fr.diginamic.jdbc.dao;
 
+import java.beans.PropertyVetoException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -9,33 +11,58 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+
 import fr.diginamic.jdbc.entites.Article;
 import fr.diginamic.jdbc.entites.Fournisseur;
 
 public class ArticleDaoJdbc implements ArticleDao{
+	
+
+
+		private static ResourceBundle bundle = ResourceBundle.getBundle("database");
+		// On créé le singleton 
+		private static ArticleDaoJdbc instance = new ArticleDaoJdbc();
+		// La classe DbMgr n'a qu'un seul attribut d'instance: le pool de connexions.
+		private ComboPooledDataSource cpds;
+		/**
+		 * Constructeur privé appelé une seule fois lors de la création
+		 * du singleton et qui initialise le pool de connexions.
+		 */
+		public ArticleDaoJdbc(){
+			try {
+				cpds = new ComboPooledDataSource();
+				cpds.setDriverClass(bundle.getString("database.driver"));        
+				cpds.setJdbcUrl(bundle.getString("database.url"));
+				cpds.setUser(bundle.getString("database.user"));                                  
+				cpds.setPassword(bundle.getString("database.password"));
+			} catch (PropertyVetoException e) {
+				throw new RuntimeException("Impossible de se connecter à la base de données.");
+			}           
+		}
+		/** Récupère une connexion
+		 * @return Connection
+		 */
+		public static Connection getConnection(){
+			try {
+				return instance.cpds.getConnection();
+			} catch (SQLException e) {
+				throw new RuntimeException("Impossible de récupérer une nouvelle connexion sur la base de données.");
+			}
+		}
+	
 
 	@Override
 	public List<Article> extraire() throws RuntimeException{
-		ResourceBundle monFichierConf = ResourceBundle.getBundle("database");
-		String driverName = monFichierConf.getString("database.driver");
-		String url=monFichierConf.getString("database.url");
-		String user=monFichierConf.getString("database.user");
-		String password="";
 		ArrayList<Article> listArticle = new ArrayList<>();
-		
-		try {
-			Class.forName(driverName);
-		} catch (ClassNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
 		Connection connection=null;
-		Statement monStatement=null;
+		PreparedStatement monStatement=null;
 		ResultSet curseur=null;
+		String tempo="SELECT ID, REF,DESIGNATION,PRIX,FOURNISSEUR_ID FROM ARTICLE";
 		try {
-			connection = DriverManager.getConnection(url, user, password);
-			monStatement = connection.createStatement();
-			curseur = monStatement.executeQuery("SELECT ID, REF,DESIGNATION,PRIX,FOURNISSEUR_ID FROM ARTICLE");
+			connection = getConnection();
+			monStatement = connection.prepareStatement(tempo);
+			curseur = monStatement.executeQuery();
 			
 			while (curseur.next()){
 				
@@ -76,31 +103,22 @@ public class ArticleDaoJdbc implements ArticleDao{
 		String designation=article.getDesignation();
 		double prix=article.getPrix();
 		int fournisseurId=article.getFournisseurId();
-		
-		
-		ResourceBundle monFichierConf = ResourceBundle.getBundle("database");
-		String driverName = monFichierConf.getString("database.driver");
-		String url=monFichierConf.getString("database.url");
-		String user=monFichierConf.getString("database.user");
-		String password="";
-		
-		
-		try {
-			Class.forName(driverName);
-		} catch (ClassNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		String tempo="INSERT INTO ARTICLE (ID,REf,DESIGNATION,PRIX,FOURNISSEUR_ID) VALUES ('"+id+"','"+ref+"','"+designation+"','"+prix+"','"+fournisseurId+"')";
+
+		String tempo="INSERT INTO ARTICLE (ID,REf,DESIGNATION,PRIX,FOURNISSEUR_ID) VALUES (?,?,?,?,?)";
 		Connection connection=null;
-		Statement monStatement=null;
+		PreparedStatement monStatement=null;
 		
 		
 		try {
-			connection = DriverManager.getConnection(url, user, password);
+			connection = getConnection();
 			
-			monStatement = connection.createStatement();
-			monStatement.executeUpdate(tempo);
+			monStatement = connection.prepareStatement(tempo);
+			monStatement.setInt(1,id);
+			monStatement.setString(2, ref);
+			monStatement.setString(3,designation);
+			monStatement.setDouble(4, prix);
+			monStatement.setInt(5, fournisseurId);
+			monStatement.executeUpdate();
 			connection.commit();
 
 		} catch (SQLException e) {
@@ -121,30 +139,21 @@ public class ArticleDaoJdbc implements ArticleDao{
 
 	@Override
 	public int update(String designation, double pourcentage) throws RuntimeException{
-		
-		ResourceBundle monFichierConf = ResourceBundle.getBundle("database");
-		String driverName = monFichierConf.getString("database.driver");
-		String url=monFichierConf.getString("database.url");
-		String user=monFichierConf.getString("database.user");
-		String password="";
+
 		int stn=0;
-		
-		try {
-			Class.forName(driverName);
-		} catch (ClassNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		
+
 		Connection connection=null;
-		Statement monStatement=null;
+		PreparedStatement monStatement=null;
+		String tempo="UPDATE ARTICLE SET PRIX= PRIX-(PRIX*(?/100))  WHERE DESIGNATION like ?";
 		
 		try {
-			connection = DriverManager.getConnection(url, user, password);
-			monStatement = connection.createStatement();
-			String temp="PRIX-(PRIX*("+pourcentage+"/100))";
+			connection = getConnection();
+			monStatement = connection.prepareStatement(tempo);
+			monStatement.setDouble(1,pourcentage);
+			monStatement.setString(2,designation+"%");
 			
-			stn=monStatement.executeUpdate("UPDATE ARTICLE SET PRIX="+temp+"  WHERE DESIGNATION like'"+designation+"%'");
+			stn=monStatement.executeUpdate();
+			
 			connection.commit();
 			
 
@@ -169,29 +178,17 @@ public class ArticleDaoJdbc implements ArticleDao{
 	public boolean delete(Article article) throws RuntimeException {
 		boolean test= false;
 		int id=article.getId();
-		ResourceBundle monFichierConf = ResourceBundle.getBundle("database");
-		String driverName = monFichierConf.getString("database.driver");
-		String url=monFichierConf.getString("database.url");
-		String user=monFichierConf.getString("database.user");
-		String password="";
-		
-		
-		try {
-			Class.forName(driverName);
-		} catch (ClassNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		
+
 		Connection connection=null;
-		Statement monStatement=null;
-		
+		PreparedStatement monStatement=null;
+		String tempo="DELETE FROM ARTICLE WHERE ID=?";
 		try {
-			connection = DriverManager.getConnection(url, user, password);
-			System.out.println(connection);
+			connection = getConnection();
 			
-			monStatement = connection.createStatement();
-			monStatement.executeUpdate("DELETE FROM ARTICLE WHERE ID='"+id+"'");
+			
+			monStatement = connection.prepareStatement(tempo);
+			monStatement.setInt(1,id);
+			monStatement.executeUpdate();
 			test=true;
 			
 
@@ -214,29 +211,16 @@ public class ArticleDaoJdbc implements ArticleDao{
 	@Override
 	public boolean deleteDesignation(String designation) throws RuntimeException {
 		boolean test= false;
-		ResourceBundle monFichierConf = ResourceBundle.getBundle("database");
-		String driverName = monFichierConf.getString("database.driver");
-		String url=monFichierConf.getString("database.url");
-		String user=monFichierConf.getString("database.user");
-		String password="";
-		
-		
-		try {
-			Class.forName(driverName);
-		} catch (ClassNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		
+	
 		Connection connection=null;
-		Statement monStatement=null;
-		
+		PreparedStatement monStatement=null;
+		String tempo="DELETE FROM ARTICLE WHERE DESIGNATION like ?";
 		try {
-			connection = DriverManager.getConnection(url, user, password);
+			connection = getConnection();
 			
-			monStatement = connection.createStatement();
-			
-			monStatement.executeUpdate("DELETE FROM ARTICLE WHERE DESIGNATION like'"+designation+"%'");
+			monStatement = connection.prepareStatement(tempo);
+			monStatement.setString(1,designation+"%");
+			monStatement.executeUpdate();
 			test=true;
 			
 
@@ -261,24 +245,13 @@ public class ArticleDaoJdbc implements ArticleDao{
 	
 	public double moyenne()
 	{
-		ResourceBundle monFichierConf = ResourceBundle.getBundle("database");
-		String driverName = monFichierConf.getString("database.driver");
-		String url=monFichierConf.getString("database.url");
-		String user=monFichierConf.getString("database.user");
-		String password="";
 		double moy=0;
-	
-		try {
-			Class.forName(driverName);
-		} catch (ClassNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+
 		Connection connection=null;
 		Statement monStatement=null;
 		ResultSet curseur=null;
 		try {
-			connection = DriverManager.getConnection(url, user, password);
+			connection = getConnection();
 			monStatement = connection.createStatement();
 			curseur = monStatement.executeQuery("SELECT AVG(PRIX) FROM ARTICLE");
 			
